@@ -1194,7 +1194,7 @@ define([
                 this.editorConfig.customization && Common.UI.FeaturesManager.init(this.editorConfig.customization.features, this.appOptions.canBrandingExt);
                 Common.UI.TabStyler.init(this.editorConfig.customization); // call after Common.UI.FeaturesManager.init() !!!
 
-                this.appOptions.canBranding  = params.asc_getCustomization();
+                this.appOptions.canBranding  = true; // Euro-Office: branding is not license-gated
                 if (this.appOptions.canBranding)
                     appHeader.setBranding(this.editorConfig.customization, this.appOptions);
 

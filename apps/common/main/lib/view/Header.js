@@ -411,7 +411,12 @@ define([
                     var _url = !!me.branding && !!me.branding.logo && (me.branding.logo.url!==undefined) ?
                         me.branding.logo.url : '{{PUBLISHER_URL}}';
                     if (_url) {
-                        var newDocumentPage = window.open(_url);
+                        // branding.logo.urlTarget === 'parent' navigates the
+                        // embedding page in place (host dashboards) instead
+                        // of opening a new tab.
+                        var _target = !!me.branding && !!me.branding.logo && me.branding.logo.urlTarget === 'parent' ?
+                            '_parent' : undefined;
+                        var newDocumentPage = _target ? window.open(_url, _target) : window.open(_url);
                         newDocumentPage && newDocumentPage.focus();
                     }
                 });

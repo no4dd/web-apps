@@ -267,6 +267,20 @@
 
         var require = {
             waitSeconds: 30,
+            baseUrl: window.customBaseUrl || "../../",
+            paths: {
+                app:           "spreadsheeteditor/main/app",
+                sdk:           "../../sdkjs/cell/sdk-all-min",
+                jquery:        "../vendor/jquery/jquery.min",
+                socketio:      "../vendor/socketio/socket.io.min",
+                xregexp:       "../vendor/xregexp/xregexp-all-min",
+                allfonts:      "../../sdkjs/common/AllFonts",
+                coapisettings: "coapisettings",
+                api:           "api/documents/api"
+            },
+            shim: {
+                sdk: { deps: ["jquery", "allfonts", "xregexp", "socketio"] }
+            },
             callback: function(){
                 clearTimeout(requireTimeoutID);
             }

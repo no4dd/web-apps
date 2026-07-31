@@ -1,0 +1,21 @@
+{
+  "company_name": "BlankSuite",
+  "publisher_name": "BlankSuite Ltd",
+  "publisher_url": "https://blanksuite.com",
+  "publisher_address": "",
+  "publisher_phone": "",
+  "sales_email": "",
+  "support_email": "",
+  "support_url": "https://blanksuite.com",
+  "help_url": "https://blanksuite.com",
+  "app_title": "BlankSuite Editor",
+  "attribution": "BlankSuite Editor is a modified version of Euro-Office. Euro-Office is based on ONLYOFFICE DocumentServer, originally developed by Ascensio System SIA.",
+  "loader_logo": "dark-logo_s.svg",
+  "loader_logo_dark": "header-logo_s.svg",
+  "mobile_logo_light": "dark-logo_s.svg",
+  "mobile_logo_dark": "header-logo_s.svg",
+  "about_logo_light": "logo.svg",
+  "about_logo_dark": "logo.svg",
+  "forms_logo_light": "dark-logo_s.svg",
+  "forms_logo_dark": "header-logo_s.svg"
+}

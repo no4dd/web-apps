@@ -76,6 +76,13 @@ for (const dest of dests) {
 // Embed logo — optional, only if present in the theme
 const embedLogo = path.join(IMG_SRC, 'embed', 'logo.svg');
 if (fs.existsSync(embedLogo)) {
+    // Embed LESS resolves the logo from apps/common/embed, regardless of which
+    // editor is active. Keep the per-editor copies for compatibility, but
+    // deploy the shared path that the browser actually requests as well.
+    const commonEmbedLogoDir = path.join(APPS_OUT, 'common', 'embed', 'resources', 'img');
+    fs.mkdirSync(commonEmbedLogoDir, { recursive: true });
+    fs.copyFileSync(embedLogo, path.join(commonEmbedLogoDir, 'logo.svg'));
+
     for (const editor of EDITORS) {
         const logoDir = path.join(APPS_OUT, editor, 'embed', 'resources', 'img');
         fs.mkdirSync(logoDir, { recursive: true });

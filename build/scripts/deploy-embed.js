@@ -90,7 +90,12 @@ async function buildEditor(editorName) {
     const sources = {};
     for (const src of emb.js.src) {
         const absPath = fromRepoRoot(src);
-        sources[path.basename(absPath)] = fs.readFileSync(absPath, 'utf8');
+        // Terser accepts a source-name-to-code map. Basenames are not unique
+        // across the embed manifest (for example, common/view/SearchBar.js and
+        // spreadsheeteditor/js/SearchBar.js), so using only the basename
+        // silently discarded the first file in each collision.
+        const sourceName = path.relative(REPO_ROOT, absPath).split(path.sep).join('/');
+        sources[sourceName] = fs.readFileSync(absPath, 'utf8');
     }
     const minified = await minify(sources, {
         compress: true,

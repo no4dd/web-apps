@@ -477,5 +477,7 @@
   "VE.Views.ViewTab.textZoom": "Масштаб",
   "VE.Views.ViewTab.tipFitPage": "По размеру страницы",
   "VE.Views.ViewTab.tipFitWidth": "По ширине",
-  "VE.Views.ViewTab.tipInterfaceTheme": "Тема интерфейса"
+  "VE.Views.ViewTab.tipInterfaceTheme": "Тема интерфейса",
+  "VE.Controllers.Main.errorFileNotAssembled": "This file is opened from a server backup copy and is not saved to storage.<br>Use the 'Save as...' option to save it to a drive.",
+  "VE.Controllers.Main.errorForcedViewMode": "This file is opened in view mode.<br>The file is locked for editing or your access rights do not allow editing."
 }

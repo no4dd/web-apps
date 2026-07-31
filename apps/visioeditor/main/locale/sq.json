@@ -477,5 +477,7 @@
   "VE.Views.ViewTab.textZoom": "Zmadhoj",
   "VE.Views.ViewTab.tipFitPage": "Përshtatet me faqen",
   "VE.Views.ViewTab.tipFitWidth": "Përshtatet me gjerësinë",
-  "VE.Views.ViewTab.tipInterfaceTheme": "Temë e ndërfaqes"
+  "VE.Views.ViewTab.tipInterfaceTheme": "Temë e ndërfaqes",
+  "VE.Controllers.Main.errorFileNotAssembled": "This file is opened from a server backup copy and is not saved to storage.<br>Use the 'Save as...' option to save it to a drive.",
+  "VE.Controllers.Main.errorForcedViewMode": "This file is opened in view mode.<br>The file is locked for editing or your access rights do not allow editing."
 }

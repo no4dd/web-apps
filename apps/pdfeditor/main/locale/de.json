@@ -3074,5 +3074,9 @@
   "PDFE.Views.ViewTab.tipFitToWidth": "Breite anpassen",
   "PDFE.Views.ViewTab.tipHeadings": "Überschriften",
   "PDFE.Views.ViewTab.tipInterfaceTheme": "Thema der Benutzeroberfläche",
-  "PDFE.Views.ViewTab.tipRecognize": "Text bearbeiten"
+  "PDFE.Views.ViewTab.tipRecognize": "Text bearbeiten",
+  "PDFE.Controllers.Main.errorFileNotAssembled": "This file is opened from a server backup copy and is not saved to storage.<br>Use the 'Save as...' option to save it to a drive.",
+  "PDFE.Controllers.Main.errorForcedViewMode": "This file is opened in view mode.<br>The file is locked for editing or your access rights do not allow editing.",
+  "PDFE.Controllers.Toolbar.helpCreateLink": "Easily add links to an external resource or a page within the current file.",
+  "PDFE.Controllers.Toolbar.helpCreateLinkHeader": "Create & edit links"
 }

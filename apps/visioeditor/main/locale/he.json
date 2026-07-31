@@ -474,5 +474,10 @@
   "VE.Views.ViewTab.textZoom": "תקריב",
   "VE.Views.ViewTab.tipFitPage": "התאמה לדף",
   "VE.Views.ViewTab.tipFitWidth": "התאמה לרוחב",
-  "VE.Views.ViewTab.tipInterfaceTheme": "ערכת נושא של הממשק"
+  "VE.Views.ViewTab.tipInterfaceTheme": "ערכת נושא של הממשק",
+  "VE.Controllers.Main.errorCopyDisabled": "For security reasons, the contents of this document cannot be copied.",
+  "VE.Controllers.Main.errorFileNotAssembled": "This file is opened from a server backup copy and is not saved to storage.<br>Use the 'Save as...' option to save it to a drive.",
+  "VE.Controllers.Main.errorForcedViewMode": "This file is opened in view mode.<br>The file is locked for editing or your access rights do not allow editing.",
+  "VE.Views.PrintWithPreview.txtEmptyTable": "There is nothing to print because the diagram is empty",
+  "VE.Views.PrintWithPreview.txtWaitingForPrinters": "Waiting for printers"
 }

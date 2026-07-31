@@ -477,5 +477,7 @@
   "VE.Views.ViewTab.textZoom": "缩放",
   "VE.Views.ViewTab.tipFitPage": "适合页面",
   "VE.Views.ViewTab.tipFitWidth": "适应宽度",
-  "VE.Views.ViewTab.tipInterfaceTheme": "界面主题"
+  "VE.Views.ViewTab.tipInterfaceTheme": "界面主题",
+  "VE.Controllers.Main.errorFileNotAssembled": "This file is opened from a server backup copy and is not saved to storage.<br>Use the 'Save as...' option to save it to a drive.",
+  "VE.Controllers.Main.errorForcedViewMode": "This file is opened in view mode.<br>The file is locked for editing or your access rights do not allow editing."
 }

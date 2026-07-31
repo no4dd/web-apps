@@ -477,5 +477,7 @@
   "VE.Views.ViewTab.textZoom": "확대 / 축소",
   "VE.Views.ViewTab.tipFitPage": "페이지에 맞춤",
   "VE.Views.ViewTab.tipFitWidth": "너비에 맞춤",
-  "VE.Views.ViewTab.tipInterfaceTheme": "인터페이스 테마"
+  "VE.Views.ViewTab.tipInterfaceTheme": "인터페이스 테마",
+  "VE.Controllers.Main.errorFileNotAssembled": "This file is opened from a server backup copy and is not saved to storage.<br>Use the 'Save as...' option to save it to a drive.",
+  "VE.Controllers.Main.errorForcedViewMode": "This file is opened in view mode.<br>The file is locked for editing or your access rights do not allow editing."
 }

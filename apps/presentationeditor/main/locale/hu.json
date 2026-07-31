@@ -3565,5 +3565,12 @@
   "PE.Views.ViewTab.tipResumeMacro": "Felvétel folytatása",
   "PE.Views.ViewTab.tipSelectTool": "Eszköz kiválasztása",
   "PE.Views.ViewTab.tipSlideMaster": "Diaminta",
-  "PE.Views.ViewTab.tipStopMacro": "Felvétel leállítása"
+  "PE.Views.ViewTab.tipStopMacro": "Felvétel leállítása",
+  "PE.Controllers.Main.errorFileNotAssembled": "This file is opened from a server backup copy and is not saved to storage.<br>Use the 'Save as...' option to save it to a drive.",
+  "PE.Controllers.Main.errorForcedViewMode": "This file is opened in view mode.<br>The file is locked for editing or your access rights do not allow editing.",
+  "PE.Controllers.Toolbar.helpGifPlayback": "Bring your slides to life by playing GIF animations during slideshow mode.",
+  "PE.Controllers.Toolbar.helpGifPlaybackHeader": "GIF playback in slideshow mode",
+  "PE.Views.DocumentHolder.txtNcAssistant": "Ask Nextcloud Assistant",
+  "PE.Views.Toolbar.capSmartPicker": "Smart Picker",
+  "PE.Views.Toolbar.tipSmartPicker": "Ask Nextcloud Assistant"
 }

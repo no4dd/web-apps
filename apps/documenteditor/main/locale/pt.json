@@ -4360,5 +4360,17 @@
   "DE.Views.WatermarkSettingsDialog.textTransparency": "Semitransparente",
   "DE.Views.WatermarkSettingsDialog.textUnderline": "Sublinhar",
   "DE.Views.WatermarkSettingsDialog.tipFontName": "Nome da Fonte",
-  "DE.Views.WatermarkSettingsDialog.tipFontSize": "Tamanho da fonte"
+  "DE.Views.WatermarkSettingsDialog.tipFontSize": "Tamanho da fonte",
+  "Common.Views.Protection.txtProtectForm": "Protect Form",
+  "DE.Controllers.Main.errorFileNotAssembled": "This file is opened from a server backup copy and is not saved to storage.<br>Use the 'Save as...' option to save it to a drive.",
+  "DE.Controllers.Main.errorForcedViewMode": "This file is opened in view mode.<br>The file is locked for editing or your access rights do not allow editing.",
+  "DE.Controllers.Toolbar.helpHeaderFooterTab": "Access all header and footer options in one convenient location.",
+  "DE.Controllers.Toolbar.helpHeaderFooterTabHeader": "New tab: Header & Footer",
+  "DE.Controllers.Toolbar.helpMultipageView": "Work with multiple pages at once for easier navigation.",
+  "DE.Controllers.Toolbar.helpMultipageViewHeader": "Multipage view",
+  "DE.Controllers.Toolbar.helpSignature": "Insert a signature field to let the recipients sign forms: by image, custom text, or drawing on the screen.",
+  "DE.Controllers.Toolbar.helpSignatureHeader": "More signature options",
+  "DE.Views.DocumentHolder.txtNcAssistant": "Ask Nextcloud Assistant",
+  "DE.Views.Toolbar.capSmartPicker": "Smart Picker",
+  "DE.Views.Toolbar.tipSmartPicker": "Ask Nextcloud Assistant"
 }

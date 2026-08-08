@@ -413,9 +413,20 @@ define([
                     if (_url) {
                         // branding.logo.urlTarget === 'parent' navigates the
                         // embedding page in place (host dashboards) instead
-                        // of opening a new tab.
-                        var _target = !!me.branding && !!me.branding.logo && me.branding.logo.urlTarget === 'parent' ?
-                            '_parent' : undefined;
+                        // of opening a new tab; 'top' navigates the topmost
+                        // window — required when the editor sits inside a
+                        // wrapper iframe (a 'parent' navigation would load
+                        // the dashboard INSIDE that wrapper). window.open
+                        // with '_top' is unreliable from a doubly-nested
+                        // cross-origin frame (Chrome opens a new tab), so
+                        // 'top' assigns window.top.location directly — the
+                        // click's user activation authorises it.
+                        var _rawTarget = !!me.branding && !!me.branding.logo ? me.branding.logo.urlTarget : undefined;
+                        if (_rawTarget === 'top') {
+                            try { window.top.location.href = _url; return; }
+                            catch (topNavError) { /* fall through to window.open */ }
+                        }
+                        var _target = _rawTarget === 'parent' ? '_parent' : undefined;
                         var newDocumentPage = _target ? window.open(_url, _target) : window.open(_url);
                         newDocumentPage && newDocumentPage.focus();
                     }

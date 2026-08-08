@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<!--
+  SPDX-License-Identifier: AGPL-3.0-only
+
+  BlankSuite embed shell.
+
+  This page is part of the Euro-Office / ONLYOFFICE DocumentServer
+  distribution (AGPL-3.0). It is the only page that loads api.js and owns
+  DocsAPI.DocEditor. An embedding application interacts with it exclusively
+  through cross-origin postMessage:
+
+    host -> shell   { bsShell: 1, type: "init", config, eventNames }
+    host -> shell   { bsShell: 1, type: "invoke", method, args }
+    host -> shell   any other message: forwarded verbatim to the editor frame
+    shell -> host   { bsShell: 1, type: "ready" | "created" | "init-error" }
+    shell -> host   { bsShell: 1, type: "event", name, data }
+    shell -> host   any message from the editor frame: forwarded verbatim
+
+  The first "init" from the parent window locks the host origin; every later
+  inbound message must come from that same window and origin.
+-->
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>BlankSuite Editor</title>
+  <style>
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
+    #placeholder { width: 100%; height: 100%; }
+  </style>
+</head>
+<body>
+  <div id="placeholder"></div>
+  <!-- Absolute (root-relative) on purpose: this page is reached through a
+       version-prefixed redirect, and a relative src would resolve api.js
+       under that prefix. api.js then appends its own baked version prefix,
+       and when the two tags differ the editor URL doubles up and 404s. -->
+  <script src="/web-apps/apps/api/documents/api.js"></script>
+  <script>
+  (function () {
+    "use strict";
+
+    var hostWin = null;
+    var hostOrigin = null;
+    var editor = null;
+    var editorFrame = null;
+
+    // Editor methods the host may call remotely. Everything else is refused.
+    var INVOKE_METHODS = {
+      "destroyEditor": true,
+      "setFavorite": true,
+      "setUsers": true,
+      "setActionLink": true,
+      "refreshHistory": true,
+      "setHistoryData": true,
+      "setSharingSettings": true
+    };
+
+    function postToHost(message)
+    {
+      if (!hostWin || !hostOrigin)
+        return;
+      try
+      {
+        hostWin.postMessage(message, hostOrigin);
+      }
+      catch (e)
+      {
+        warn("post to host failed: " + (e && e.message));
+      }
+    }
+
+    function warn(message)
+    {
+      if (window.console && console.warn)
+        console.warn("[BlankSuite shell] " + message);
+    }
+
+    function findEditorFrame()
+    {
+      if (editorFrame && editorFrame.contentWindow)
+        return editorFrame;
+      editorFrame = document.querySelector("iframe");
+      return editorFrame;
+    }
+
+    function toRelayPayload(event)
+    {
+      // DocEditor handlers receive either nothing or { data: ... }. Relay the
+      // inner data when it is JSON-cloneable, null otherwise.
+      var payload = null;
+      if (event && "object" === typeof event && "data" in event)
+        payload = event["data"];
+      else if (undefined !== event && null !== event && "object" !== typeof event)
+        payload = event;
+      try
+      {
+        JSON.stringify(payload);
+      }
+      catch (e)
+      {
+        payload = null;
+      }
+      return undefined === payload ? null : payload;
+    }
+
+    function handleInit(event)
+    {
+      if (hostWin)
+        return; // single init per shell lifetime
+      if (event.source !== window.parent)
+        return;
+      hostWin = event.source;
+      hostOrigin = event.origin;
+      try
+      {
+        if (!window.DocsAPI || !window.DocsAPI.DocEditor)
+          throw new Error("DocsAPI unavailable");
+        var config = event.data["config"] || {};
+        var eventNames = event.data["eventNames"] || [];
+        var events = {};
+        for (var i = 0; i < eventNames.length; i++)
+        {
+          (function (name) {
+            if ("string" !== typeof name)
+              return;
+            events[name] = function (editorEvent) {
+              postToHost({ "bsShell": 1, "type": "event", "name": name, "data": toRelayPayload(editorEvent) });
+            };
+          })(eventNames[i]);
+        }
+        config["events"] = events;
+        editor = new window.DocsAPI.DocEditor("placeholder", config);
+        postToHost({ "bsShell": 1, "type": "created" });
+      }
+      catch (e)
+      {
+        postToHost({ "bsShell": 1, "type": "init-error", "message": String(e && e.message || e) });
+      }
+    }
+
+    function handleInvoke(data)
+    {
+      var method = data["method"];
+      if (!editor || !INVOKE_METHODS[method] || "function" !== typeof editor[method])
+        return;
+      try
+      {
+        editor[method].apply(editor, data["args"] || []);
+      }
+      catch (e)
+      {
+        warn("invoke " + method + " failed: " + (e && e.message));
+      }
+    }
+
+    window.addEventListener("message", function (event)
+    {
+      // Upward: everything the editor frame tells us goes to the host
+      // verbatim (composer responses and spontaneous editor events).
+      var frame = findEditorFrame();
+      if (frame && event.source === frame.contentWindow)
+      {
+        postToHost(event.data);
+        return;
+      }
+
+      if (event.source !== window.parent)
+        return;
+
+      var data = event.data;
+      if (data && "object" === typeof data && 1 === data["bsShell"])
+      {
+        if ("init" === data["type"])
+          return handleInit(event);
+        if (!hostWin || event.origin !== hostOrigin)
+          return;
+        if ("invoke" === data["type"])
+          return handleInvoke(data);
+        return;
+      }
+
+      // Downward passthrough: anything else from the locked host is a
+      // command envelope for the editor frame (BlankSuite_Command et al).
+      if (!hostWin || event.origin !== hostOrigin)
+        return;
+      var target = findEditorFrame();
+      if (target && target.contentWindow)
+        target.contentWindow.postMessage(data, window.location.origin);
+    });
+
+    if (window.parent !== window)
+      window.parent.postMessage({ "bsShell": 1, "type": "ready" }, "*");
+  })();
+  </script>
+</body>
+</html>

@@ -12,7 +12,8 @@
         <div id="slot-status-btn-info" style="display: inline-block;"></div>
     </div>
     <div class="status-group" style="width:100%; text-align:center;">
-        <label id="label-action" class="status-label" data-layout-name="statusBar-actionStatus"></label>
+        <label id="label-action" role="status" aria-live="polite" aria-atomic="true"
+               class="status-label" data-layout-name="statusBar-actionStatus"></label>
     </div>
     <div class="status-group cnt-flex-center" style="flex-shrink:0;">
         <div class="separator short el-edit"></div>

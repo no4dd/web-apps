@@ -849,10 +849,10 @@ define([
                     if ((id==Asc.c_oAscAsyncAction['Save'] || id==Asc.c_oAscAsyncAction['ForceSaveButton']) && !this.appOptions.isOffline) {
                         if (this._state.fastCoauth && this._state.usersCount>1) {
                             me._state.timerSave = setTimeout(function () {
-                                me.getApplication().getController('Statusbar').setStatusCaption(me.textChangesSaved, false, 3000);
+                                me.getApplication().getController('Statusbar').setStatusCaption('', false, 3000);
                             }, 500);
                         } else
-                            me.getApplication().getController('Statusbar').setStatusCaption(me.textChangesSaved, false, 3000);
+                            me.getApplication().getController('Statusbar').setStatusCaption('', false, 3000);
                     } else
                         this.getApplication().getController('Statusbar').setStatusCaption('');
                 }
@@ -1639,6 +1639,7 @@ define([
                 this.api.asc_registerCallback('asc_onParticipantsChanged',     _.bind(this.onAuthParticipantsChanged, this));
                 this.api.asc_registerCallback('asc_onConnectionStateChanged',  _.bind(this.onUserConnection, this));
                 this.api.asc_registerCallback('asc_onDocumentModifiedChanged', _.bind(this.onDocumentModifiedChanged, this));
+                this.getApplication().getController('Statusbar').setStorageSaveApi(this.api, this.appOptions);
 
                 var value = Common.localStorage.getItem('pdfe-settings-unit');
                 value = (value!==null) ? parseInt(value) : (this.appOptions.customization && this.appOptions.customization.unit ? Common.Utils.Metric.c_MetricUnits[this.appOptions.customization.unit.toLocaleLowerCase()] : Common.Utils.Metric.getDefaultMetric());

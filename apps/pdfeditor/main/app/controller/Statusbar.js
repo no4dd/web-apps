@@ -33,6 +33,7 @@
 
 define([
     'core',
+    'common/main/lib/util/StorageSaveStatus',
     'pdfeditor/main/app/view/Statusbar',
     'common/main/lib/util/LanguageInfo',
     'common/main/lib/component/InputField'
@@ -176,7 +177,22 @@ define([
             Common.Utils.InternalSettings.set('pdfe-last-zoom', value);
         },
 
+        setStorageSaveApi: function(api, options) {
+            if (options.isOffline || !options.isEdit || this.storageSaveStatus) return;
+            var me = this;
+            this.storageSaveStatus = new Common.Utils.StorageSaveStatus(api, function () {
+                me.setStatusCaption('', true);
+            }, {
+                unconfirmed: this.textStorageUnconfirmed || 'Storage save not yet confirmed',
+                pending: this.textStoragePending || 'Saving document to storage…',
+                failed: this.textStorageFailed || 'Storage save failed. Keep this document open.',
+                confirmed: this.textStorageConfirmed || 'Last document snapshot saved'
+            });
+            this.setStatusCaption('', true);
+        },
+
         setStatusCaption: function(text, force, delay, callback) {
+            if (this.storageSaveStatus) text = this.storageSaveStatus.caption(text);
             if (this.timerCaption && ( ((new Date()) < this.timerCaption) || text.length==0 ) && !force )
                 return;
 

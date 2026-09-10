@@ -41,6 +41,6 @@
     </div>
     <div id="status-action" class="cnt-flex-center">
         <div class="separator short"></div>
-        <label id="label-action" class="status-label"></label>
+        <label id="label-action" role="status" aria-live="polite" aria-atomic="true" class="status-label"></label>
     </div>
 </div>

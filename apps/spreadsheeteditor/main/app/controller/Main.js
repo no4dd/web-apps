@@ -786,10 +786,10 @@ define([
                     if ((id == Asc.c_oAscAsyncAction['Save'] || id == Asc.c_oAscAsyncAction['ForceSaveButton']) && !this.appOptions.isOffline) {
                         if (this._state.fastCoauth && this._state.usersCount > 1) {
                             me._state.timerSave = setTimeout(function () {
-                                me.getApplication().getController('Statusbar').setStatusCaption(me.textChangesSaved, false, 3000);
+                                me.getApplication().getController('Statusbar').setStatusCaption('', false, 3000);
                             }, 500);
                         } else
-                            me.getApplication().getController('Statusbar').setStatusCaption(me.textChangesSaved, false, 3000);
+                            me.getApplication().getController('Statusbar').setStatusCaption('', false, 3000);
                     } else
                         this.getApplication().getController('Statusbar').setStatusCaption('');
                 }
@@ -1663,6 +1663,7 @@ define([
                     this.api.asc_registerCallback('asc_onSendThemeColors', _.bind(this.onSendThemeColors, this));
                     this.api.asc_registerCallback('asc_onDownloadUrl',     _.bind(this.onDownloadUrl, this));
                     this.api.asc_registerCallback('asc_onDocumentModifiedChanged', _.bind(this.onDocumentModifiedChanged, this));
+                    this.getApplication().getController('Statusbar').setStorageSaveApi(this.api, this.appOptions);
 
                     var printController = app.getController('Print');
                     printController && this.api && printController.setApi(this.api).setMode(this.appOptions);

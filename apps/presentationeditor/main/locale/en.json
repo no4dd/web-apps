@@ -3572,5 +3572,9 @@
   "PE.Views.ViewTab.tipResumeMacro": "Resume recording",
   "PE.Views.ViewTab.tipSelectTool": "Select tool",
   "PE.Views.ViewTab.tipSlideMaster": "Slide master",
-  "PE.Views.ViewTab.tipStopMacro": "Stop recording"
+  "PE.Views.ViewTab.tipStopMacro": "Stop recording",
+  "PE.Controllers.Statusbar.textStorageUnconfirmed": "Storage save not yet confirmed",
+  "PE.Controllers.Statusbar.textStoragePending": "Saving document to storage…",
+  "PE.Controllers.Statusbar.textStorageFailed": "Storage save failed. Keep this document open.",
+  "PE.Controllers.Statusbar.textStorageConfirmed": "Last document snapshot saved"
 }

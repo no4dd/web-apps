@@ -2368,8 +2368,13 @@ define([
                     }, this);
                 }
 
-                if (!Common.Utils.ModalWindow.isVisible() || $('.asc-window.modal.alert[data-value="' + id + '"]').length<1)
-                    setTimeout(function() {Common.UI.alert(config).$window.attr('data-value', id);}, 1);
+                var saveStatus = this.getApplication().getController('Statusbar').storageSaveStatus;
+                setTimeout(function() {
+                    if (!saveStatus || !saveStatus.showWarning(id, errData, config)) {
+                        if (!Common.Utils.ModalWindow.isVisible() || $('.asc-window.modal.alert[data-value="' + id + '"]').length<1)
+                            Common.UI.alert(config).$window.attr('data-value', id);
+                    }
+                }, 1);
 
                 (id!==undefined) && Common.component.Analytics.trackEvent('Internal Error', id.toString());
             },

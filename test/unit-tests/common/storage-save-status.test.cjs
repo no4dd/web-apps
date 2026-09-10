@@ -31,6 +31,8 @@ function context() {
 function api() {
     const callbacks = new Map();
     return {
+        documentId: 'document-a',
+        asc_getStorageSaveDocumentKey() { return this.documentId; },
         modified: false,
         asc_registerCallback(name, fn) {
             if (!callbacks.has(name)) callbacks.set(name, []);
@@ -57,6 +59,147 @@ test('action end, NotModified, missing and malformed results never confirm stora
         assert.equal(f.model.caption(''), labels.unconfirmed);
     }
 });
+
+function warningFixture(editor, ns) {
+    const ctx = context(), client = api(), dialogs = [], delayed = [];
+    ctx.Asc.c_oAscError.Level = { Critical: 1 };
+    ctx.LoadingDocument = 1;
+    ctx.setTimeout = fn => { delayed.push(fn); return 1; };
+    ctx.Common.Gateway = { reportWarning() {} };
+    ctx.Common.component = { Analytics: { trackEvent() {} } };
+    ctx.Common.Utils.ModalWindow = { isVisible: () => dialogs.some(d => d.visible) };
+    ctx.$ = () => ({ length: 0 });
+    ctx.Common.UI = { alert: config => {
+        const dialog = { visible: true, config, closed: 0, $window: { attr() {} },
+            isVisible() { return this.visible; }, close() { this.visible = false; this.closed++; } };
+        dialogs.push(dialog);
+        return dialog;
+    } };
+    const dir = path.join(root, `apps/${editor}/main/app/controller`);
+    vm.runInContext(fs.readFileSync(path.join(dir, 'Statusbar.js'), 'utf8'), ctx);
+    const statusbar = Object.create(ctx[ns].Controllers.Statusbar);
+    statusbar.statusbar = { showStatusMessage() {}, clearStatusMessage() {} };
+    const source = fs.readFileSync(path.join(dir, 'Main.js'), 'utf8');
+    const errorSource = source.match(/onError: (function\(id, level, errData[^)]*\) \{[\s\S]*?\n            \}),/);
+    const onError = vm.runInContext('(' + errorSource[1] + ')', ctx);
+    const main = { appOptions: {}, _state: {}, hidePreloader() {}, onLongActionEnd() {}, onEditComplete() {},
+        getApplication: () => ({ getController: () => statusbar }), errorForceSave: 'save failed' };
+    // Match production registration order: Main subscribes before Statusbar.
+    client.asc_registerCallback('asc_onError', onError.bind(main));
+    statusbar.setStorageSaveApi(client, { isEdit: true, isOffline: false });
+    const stamp = (time, type = types.Timeout) => ({ documentKey: client.documentId, time, type });
+    const result = (time, data, type) => client.emit('asc_onStorageSave', { ...stamp(time, type), ...data });
+    const failure = (time, type = types.Timeout) => {
+        result(time, { success: false }, type);
+        client.emit('asc_onError', type === types.Button ? errors.ForceSaveButton : errors.ForceSaveTimeout,
+            0, { storageSave: stamp(time, type) });
+    };
+    return { ctx, client, dialogs, delayed, result, failure, stamp, state: statusbar.storageSaveStatus,
+        flush: () => { while (delayed.length) delayed.shift()(); } };
+}
+
+for (const [editor, ns] of [['documenteditor', 'DE'], ['spreadsheeteditor', 'SSE'],
+    ['presentationeditor', 'PE'], ['pdfeditor', 'PDFE']]) {
+    test(`${editor}: matching recovery closes only its actual save warning`, () => {
+        const f = warningFixture(editor, ns);
+        f.result(100, { start: true }); f.failure(100); f.flush();
+        assert.equal(f.dialogs.length, 1);
+        assert.equal(f.dialogs[0].visible, true);
+        f.result(100, { success: true });
+        assert.equal(f.state.state, 'confirmed');
+        assert.equal(f.dialogs[0].visible, false);
+        assert.equal(f.dialogs[0].closed, 1);
+        f.result(100, { success: true });
+        assert.equal(f.dialogs[0].closed, 1);
+    });
+
+    test(`${editor}: older success cannot dismiss a newer failure or another dialog`, () => {
+        const f = warningFixture(editor, ns);
+        f.result(100, { start: true }); f.failure(100); f.flush();
+        f.result(101, { start: true }); f.failure(101); f.flush();
+        const warning = f.dialogs.find(d => d.visible);
+        f.client.emit('asc_onError', errors.ConvertationSaveError, 0); f.flush();
+        const unrelated = f.dialogs[f.dialogs.length - 1];
+        f.result(100, { success: true });
+        assert.equal(warning.visible, true);
+        f.result(101, { success: true });
+        assert.equal(warning.visible, true, 'uncorrelated conversion failure remains unresolved');
+        assert.equal(unrelated.visible, true);
+    });
+
+    test(`${editor}: document switches and new edits cannot borrow an old success`, () => {
+        const f = warningFixture(editor, ns);
+        f.result(100, { start: true }); f.failure(100); f.flush();
+        f.client.modified = true;
+        f.client.emit('asc_onDocumentModifiedChanged');
+        f.result(100, { success: true });
+        assert.equal(f.dialogs[0].visible, true);
+        f.client.documentId = 'document-b';
+        f.client.emit('asc_onStartAction', 1, actions.Open);
+        f.result(100, { start: true }); f.result(100, { success: true });
+        assert.equal(f.dialogs[0].visible, true);
+    });
+
+    test(`${editor}: a delayed dialog cannot reappear after matching recovery`, () => {
+        const f = warningFixture(editor, ns);
+        f.result(100, { start: true }); f.failure(100);
+        f.result(100, { success: true }); f.flush();
+        assert.equal(f.dialogs.some(d => d.visible), false);
+    });
+
+    test(`${editor}: late timeout and another document's receipt cannot clear or recreate a warning`, () => {
+        const f = warningFixture(editor, ns);
+        f.result(100, { start: true }); f.failure(100); f.flush();
+        f.client.emit('asc_onStorageSave', { type: types.Timeout, time: 100, documentKey: 'document-b', success: true });
+        assert.equal(f.dialogs[0].visible, true);
+        f.result(100, { success: true });
+        f.client.emit('asc_onError', errors.ForceSaveTimeout, 0, { storageSave: f.stamp(100) }); f.flush();
+        assert.equal(f.state.state, 'confirmed');
+        assert.equal(f.dialogs[0].visible, false);
+    });
+
+    for (const type of [types.Button, types.Timeout]) for (const timedOut of [false, true]) {
+        test(`${editor}: actual SDK ${type} ${timedOut ? 'timeout' : 'failure'} recovers its matching modal`, () => {
+            const f = warningFixture(editor, ns), ctx = f.ctx, timers = new Map();
+            Object.assign(ctx.AscCommon, { ConnectionState: {}, c_oEditorId: {}, c_oCloseCode: {},
+                c_oAscServerCommandErrors: { NoError: 0, NotModified: 4 },
+                CollaborativeEditing: { Is_Fast: () => true } });
+            ctx.window = ctx;
+            vm.runInContext(fs.readFileSync(path.join(sdk, 'common/docscoapi.js'), 'utf8'), ctx);
+            const coApi = new ctx.AscCommon.CDocsCoApi(), raw = coApi._CoAuthoringApi;
+            raw.isRightURL = () => true; raw.init = () => {}; coApi.init();
+            ctx.t = Object.assign(f.client, { CoAuthoringApi: coApi,
+                sendEvent: (...args) => f.client.emit(...args),
+                sync_StartAction() {}, sync_EndAction() {},
+                forceSaveButtonTimeout: null, forceSaveTimeoutTimeout: null });
+            ctx.c_oAscAsyncActionType = ctx.Asc.c_oAscAsyncActionType;
+            ctx.c_oAscAsyncAction = actions;
+            ctx.c_oAscError = ctx.Asc.c_oAscError;
+            let timerId = 0;
+            ctx.setTimeout = fn => { timers.set(++timerId, fn); return timerId; };
+            ctx.clearInterval = id => timers.delete(id);
+            const source = fs.readFileSync(path.join(sdk, 'common/apiBase.js'), 'utf8');
+            for (const name of ['onStorageSave', 'onForceSave']) {
+                const match = source.match(new RegExp('this\\.CoAuthoringApi\\.' + name + ' = (function\\(data\\) \\{[\\s\\S]*?\\n        \\});'));
+                assert.ok(match);
+                coApi[name] = vm.runInContext('(' + match[1] + ')', ctx);
+            }
+            if (type === types.Button) raw._onForceSaveStart({ code: 0, time: 100 });
+            else raw._onForceSave({ type, time: 100, start: true });
+            if (timedOut) {
+                const expire = timers.values().next().value;
+                assert.ok(expire); timers.clear(); expire();
+            } else {
+                raw._onForceSave({ type, time: 100, success: false });
+            }
+            for (const fn of timers.values()) fn(); timers.clear();
+            assert.equal(f.dialogs[0].visible, true);
+            raw._onForceSave({ type, time: 100, success: true });
+            assert.equal(f.state.state, 'confirmed');
+            assert.equal(f.dialogs[0].visible, false);
+        });
+    }
+}
 test('failure survives synchronization and action end; matching positive retry recovers', () => {
     const f = fixture();
     f.result(100, { start: true });
@@ -99,7 +242,8 @@ test('new local/remote edits and disconnect invalidate earlier in-flight acknowl
 test('timeout stays failed until a matching positive result, not another action ending', () => {
     const f = fixture();
     f.result(100, { start: true });
-    f.client.emit('asc_onError', errors.ForceSaveTimeout);
+    f.client.emit('asc_onError', errors.ForceSaveTimeout, 0,
+        { storageSave: { documentKey: 'document-a', type: types.Timeout, time: 100 } });
     f.client.emit('asc_onEndAction', 1, actions.Save);
     assert.equal(f.model.caption(''), labels.failed);
     f.result(100, { success: true });
@@ -205,13 +349,15 @@ test('actual SDK wire handler forwards storage result independently of local but
     raw._onForceSaveStart({ code: 4 });
     assert.equal(storage.length, 2); // NotModified is not a durable-storage receipt
     const source = fs.readFileSync(path.join(sdk, 'common/apiBase.js'), 'utf8');
+    assert.ok(source.includes("prot['asc_getStorageSaveDocumentKey'] = prot.asc_getStorageSaveDocumentKey"));
     const bridge = source.match(/this\.CoAuthoringApi\.onStorageSave = (function\(data\) \{[\s\S]*?\n        \});/);
     assert.ok(bridge);
     const received = [];
-    ctx.t = { sendEvent: (...args) => received.push(args) };
+    ctx.t = { documentId: 'document-a', sendEvent: (...args) => received.push(args) };
     const call = vm.runInContext('(' + bridge[1] + ')', ctx);
     const payload = { type: types.Timeout, time: 102, success: true };
     call(payload);
     assert.equal(received[0][0], 'asc_onStorageSave');
-    assert.equal(received[0][1], payload);
+    assert.deepEqual(JSON.parse(JSON.stringify(received[0][1])), { ...payload, documentKey: 'document-a' });
+    assert.equal(legacy[0].time, 100);
 });

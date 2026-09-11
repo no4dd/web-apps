@@ -416,7 +416,8 @@
 }
 
 .btn-header-share,
-.btn-header-pdf-mode {
+.btn-header-pdf-mode,
+.btn-header-side-panel {
     display: flex;
     align-items: center;
     padding: 0 6px;
@@ -444,6 +445,52 @@
         .caption {
             opacity: @header-component-active-icon-opacity;
         }
+    }
+}
+
+// customization.sidePanels toggles with placement 'header'. Unlike the other
+// header buttons these report an open/closed state, which a change in caption
+// opacity alone does not read as — so the pressed state takes a background,
+// like the rail toggles do. A host-supplied icon is optional here (the caption
+// names the panel) and is painted as a mask so the theme colours it.
+.btn-header-side-panel {
+    border-radius: @border-radius-small;
+
+    .side-panel-icon {
+        display: inline-block;
+        width: @x-small-btn-icon-size-ie;
+        width: @x-small-btn-icon-size;
+        height: @x-small-btn-icon-size-ie;
+        height: @x-small-btn-icon-size;
+        font-size: 0;
+        vertical-align: middle;
+        background-color: @icon-toolbar-header-ie;
+        background-color: @icon-toolbar-header;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+    }
+
+    img {
+        max-width: @x-small-btn-icon-size-ie;
+        max-width: @x-small-btn-icon-size;
+        max-height: @x-small-btn-icon-size-ie;
+        max-height: @x-small-btn-icon-size;
+        vertical-align: middle;
+    }
+
+    &:hover:not(:disabled) {
+        background-color: @highlight-header-button-hover-ie;
+        background-color: @highlight-header-button-hover;
+    }
+
+    &:active:not(:disabled),
+    &.active:not(:disabled) {
+        background-color: @highlight-header-button-pressed-ie;
+        background-color: @highlight-header-button-pressed;
     }
 }
 

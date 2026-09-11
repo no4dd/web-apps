@@ -32,7 +32,8 @@
 define([
     'underscore',
     'backbone',
-    'common/main/lib/component/BaseView'
+    'common/main/lib/component/BaseView',
+    'common/main/lib/component/ExternalPanels'
 ], function (_, Backbone) {
     'use strict';
 
@@ -67,6 +68,13 @@ define([
                 btns.forEach(_.bind(function (button) {
                     if (button && button.cmpEl.is(':visible')) {
                         this.buttons.push(button);
+                    }
+                }, this));
+                // Host panels are inserted outside this fixed list; re-append
+                // them so the overflow ("More") menu keeps accounting for them.
+                (this.externalPanels || []).forEach(_.bind(function (panel) {
+                    if (panel.button && panel.button.cmpEl.is(':visible')) {
+                        this.buttons.push(panel.button);
                     }
                 }, this));
             },
@@ -197,6 +205,64 @@ define([
                 if (menuItem) {
                     menuItem.setChecked(true, true);
                 }
+            },
+
+            /**
+             *  Host-owned side panels with placement 'rail': an icon toggle
+             *  alongside the editor's own settings panels. Everything the
+             *  toggle opens belongs to the host — see Common.UI.ExternalPanels.
+             */
+            setExternalPanels: function (panels) {
+                if (this.externalPanels) return;
+
+                var configs = Common.UI.ExternalPanels.read(panels, 'rail');
+                if (!configs.length) return;
+
+                // setMode() can land before the rail markup exists; the
+                // overflow slot is the anchor every button is inserted before.
+                if (!this.btnMoreContainer) {
+                    if (!this._externalPanelsDeferred) {
+                        this._externalPanelsDeferred = true;
+                        this.on('render:after', _.bind(function () {
+                            var pending = this._externalPanelsPending;
+                            this._externalPanelsPending = undefined;
+                            this.setExternalPanels(pending);
+                        }, this));
+                    }
+                    this._externalPanelsPending = panels;
+                    return;
+                }
+
+                this.externalPanels = [];
+                configs.forEach(_.bind(this.addExternalPanel, this));
+            },
+
+            addExternalPanel: function (config) {
+                var masked = Common.UI.ExternalPanels.supportsMask(),
+                    $button = $('<div class="slot-btn-side-panel"></div>'),
+                    button = new Common.UI.Button({
+                        // side-panel-button carries the icon metrics; the
+                        // sprite-based category buttons have their own.
+                        cls: 'btn-category side-panel-button',
+                        hint: Common.Utils.String.htmlEncode(config.title),
+                        enableToggle: true,
+                        onlyIcon: true,
+                        // No toggleGroup: a host panel is independent of the
+                        // editor's own settings panels, and of every other host
+                        // panel. Selecting a shape must not close the assistant.
+                        iconCls: masked ? 'side-panel-icon' : '',
+                        iconImg: masked ? undefined : config.icon,
+                        value: config.id,
+                        type: 'external-panel'
+                    });
+
+                button.render($button);
+                masked && Common.UI.ExternalPanels.applyMask(button, '.side-panel-icon', config.icon);
+
+                // insertButton() places the button ahead of the overflow slot
+                // and registers it for overflow accounting.
+                this.insertButton(button, $button);
+                this.externalPanels.push(Common.UI.ExternalPanels.attach(config, button));
             },
 
             setDisabledMoreMenuItem: function (btn, disabled) {

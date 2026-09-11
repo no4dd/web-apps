@@ -461,6 +461,7 @@ define([
                 this.appOptions.canRequestInsertImage = this.editorConfig.canRequestInsertImage;
                 this.appOptions.compatibleFeatures = (typeof (this.appOptions.customization) == 'object') && !!this.appOptions.customization.compatibleFeatures;
                 this.appOptions.canRequestSharingSettings = this.editorConfig.canRequestSharingSettings;
+                this.appOptions.canRequestSidePanel = this.editorConfig.canRequestSidePanel;
                 this.appOptions.mentionShare = !((typeof (this.appOptions.customization) == 'object') && (this.appOptions.customization.mentionShare==false));
                 this.appOptions.canMakeActionLink = this.editorConfig.canMakeActionLink;
                 this.appOptions.canFeaturePivot = true;
@@ -1173,6 +1174,12 @@ define([
                 Common.Gateway.on('processrightschange', _.bind(me.onProcessRightsChange, me));
                 Common.Gateway.on('processmouse', _.bind(me.onProcessMouse, me));
                 Common.Gateway.on('downloadas',   _.bind(me.onDownloadAs, me));
+                Common.Gateway.on('setdocumenttitle', function(data) {
+                    // The host re-read this name through its authorized storage API.
+                    // Updating metadata preserves the live room and unsaved changes.
+                    if (!me.appOptions.wopi && me.api && me.api.CoAuthoringApi)
+                        me.api.CoAuthoringApi.onMeta({title: data.title});
+                });
                 Common.Gateway.on('setfavorite',  _.bind(me.onSetFavorite, me));
                 Common.Gateway.on('requestclose', _.bind(me.onRequestClose, me));
                 Common.Gateway.on('refreshhistory',_.bind(me.onRefreshHistory, me));

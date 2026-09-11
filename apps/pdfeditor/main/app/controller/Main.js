@@ -1167,6 +1167,10 @@ define([
                 Common.Gateway.on('processmouse',           _.bind(me.onProcessMouse, me));
                 Common.Gateway.on('refreshhistory',               _.bind(me.onRefreshHistory, me));
                 Common.Gateway.on('downloadas',             _.bind(me.onDownloadAs, me));
+                Common.Gateway.on('setdocumenttitle', function(data) {
+                    if (!me.appOptions.wopi && me.api && me.api.CoAuthoringApi)
+                        me.api.CoAuthoringApi.onMeta({title: data.title});
+                });
                 Common.Gateway.on('setfavorite',            _.bind(me.onSetFavorite, me));
                 Common.Gateway.on('requestclose',           _.bind(me.onRequestClose, me));
                 this.appOptions.canRequestSaveAs && Common.Gateway.on('internalcommand', function(data) {

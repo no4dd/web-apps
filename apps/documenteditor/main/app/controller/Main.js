@@ -459,6 +459,7 @@ define([
                 this.appOptions.canRequestCompareFile = this.editorConfig.canRequestCompareFile;
                 this.appOptions.canRequestMailMergeRecipients = this.editorConfig.canRequestMailMergeRecipients;
                 this.appOptions.canRequestSharingSettings = this.editorConfig.canRequestSharingSettings;
+                this.appOptions.canRequestSidePanel = this.editorConfig.canRequestSidePanel;
                 this.appOptions.canRequestSelectDocument = this.editorConfig.canRequestSelectDocument;
                 this.appOptions.canRequestSelectSpreadsheet = this.editorConfig.canRequestSelectSpreadsheet;
                 this.appOptions.canRequestReferenceData = this.editorConfig.canRequestReferenceData;
@@ -1541,6 +1542,12 @@ define([
                 Common.Gateway.on('processmouse',           _.bind(me.onProcessMouse, me));
                 Common.Gateway.on('refreshhistory',         _.bind(me.onRefreshHistory, me));
                 Common.Gateway.on('downloadas',             _.bind(me.onDownloadAs, me));
+                Common.Gateway.on('setdocumenttitle', function(data) {
+                    // The host re-read this name through its authorized storage API.
+                    // Updating metadata preserves the live room and unsaved changes.
+                    if (!me.appOptions.wopi && me.api && me.api.CoAuthoringApi)
+                        me.api.CoAuthoringApi.onMeta({title: data.title});
+                });
                 Common.Gateway.on('setfavorite',            _.bind(me.onSetFavorite, me));
                 Common.Gateway.on('requestclose',           _.bind(me.onRequestClose, me));
                 this.appOptions.canRequestSaveAs && Common.Gateway.on('internalcommand', function(data) {

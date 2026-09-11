@@ -269,6 +269,10 @@ define([
             this.mode = mode;
             this.imageSettings && this.imageSettings.setMode(mode);
             this.shapeSettings && this.shapeSettings.setMode(mode);
+            // Only when the integrator actually registered onRequestSidePanel:
+            // a toggle nobody listens to would be a dead control.
+            mode && mode.canRequestSidePanel &&
+                this.setExternalPanels(mode.customization && mode.customization.sidePanels);
             return this;
         },
 

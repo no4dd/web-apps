@@ -253,6 +253,10 @@ define([
             this.shapeSettings && this.shapeSettings.setMode(mode);
             this.slideSettings && this.slideSettings.setMode(mode);
             this.chartSettings && this.chartSettings.setMode(mode);
+            // Only when the integrator actually registered onRequestSidePanel:
+            // a toggle nobody listens to would be a dead control.
+            mode && mode.canRequestSidePanel &&
+                this.setExternalPanels(mode.customization && mode.customization.sidePanels);
         },
 
         onBtnMenuClick: function(btn, e) {

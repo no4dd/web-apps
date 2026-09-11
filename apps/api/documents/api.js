@@ -126,6 +126,18 @@
                         logo: '',
                         logoDark: '', // logo for dark theme
                     },
+                    sidePanels: [ // host-owned panels: adds a toggle to the editor
+                        {         // chrome, reports clicks through onRequestSidePanel
+                            id: 'panel-id',       // opaque; echoed back on every event
+                            title: 'Panel title', // button caption ('header') or tooltip ('rail')
+                            placement: 'header',  // 'header' - captioned button beside Share
+                                                  // 'rail' (default) - icon toggle in the right menu
+                            icon: url,            // http(s) or data: image, drawn as a mask so the
+                                                  // editor theme colours it. Required for 'rail',
+                                                  // optional for 'header' (the caption names it)
+                            active: false,        // initial toggle state, optional
+                        }
+                    ],
                     about: true,
                     feedback: {
                         visible: false,
@@ -320,6 +332,7 @@
                 'onRequestInsertImage': <try to insert image>,// must call insertImage method
                 'onRequestCompareFile': <request file to compare>,// must call setRevisedFile method. must be deprecated
                 'onRequestSharingSettings': <request sharing settings>,// must call setSharingSettings method
+                'onRequestSidePanel': <a customization.sidePanels toggle was clicked>,// data: {id, active}. The host owns the panel; call setSidePanelState to push the state back. Also sent with {installed: true, visible} when a toggle enters the rail and whenever its reachability changes (the rail can be switched off)
                 'onRequestCreateNew': <try to create document>,
                 'onRequestReferenceData': <try to refresh external data>,
                 'onRequestOpen': <try to open external link>,
@@ -397,6 +410,7 @@
         _config.editorConfig.canRequestMailMergeRecipients = _config.events && !!_config.events.onRequestMailMergeRecipients;
         _config.editorConfig.canRequestCompareFile = _config.events && !!_config.events.onRequestCompareFile;
         _config.editorConfig.canRequestSharingSettings = _config.events && !!_config.events.onRequestSharingSettings;
+        _config.editorConfig.canRequestSidePanel = _config.events && !!_config.events.onRequestSidePanel;
         _config.editorConfig.canRequestCreateNew = _config.events && !!_config.events.onRequestCreateNew;
         _config.editorConfig.canRequestReferenceData = _config.events && !!_config.events.onRequestReferenceData;
         _config.editorConfig.canRequestOpen = _config.events && !!_config.events.onRequestOpen;
@@ -760,6 +774,12 @@
             });
         };
 
+        // Display metadata only; storage authorization and document bytes are unchanged.
+        var _setDocumentTitle = function(title) {
+            if (typeof title !== 'string' || !title || title.length > 1024) return;
+            _sendCommand({ command: 'setDocumentTitle', data: { title: title } });
+        };
+
         var _setSharingSettings = function(data) {
             _sendCommand({
                 command: 'setSharingSettings',
@@ -791,6 +811,13 @@
         var _setAssistantAvailable = function(data) {
             _sendCommand({
                 command: 'setAssistantAvailable',
+                data: data
+            });
+        };
+
+        var _setSidePanelState = function(data) {
+            _sendCommand({
+                command: 'setSidePanelState',
                 data: data
             });
         };
@@ -930,10 +957,12 @@
             setUsers            : _setUsers,
             showSharingSettings : _showSharingSettings,
             setSharingSettings  : _setSharingSettings,
+            setDocumentTitle    : _setDocumentTitle,
             insertImage         : _insertImage,
             insertLink          : _insertLink,
             insertPlainText          : _insertPlainText,
             setAssistantAvailable    : _setAssistantAvailable,
+            setSidePanelState        : _setSidePanelState,
             setMailMergeRecipients: _setMailMergeRecipients,
             setRevisedFile      : _setRevisedFile,
             setFavorite         : _setFavorite,

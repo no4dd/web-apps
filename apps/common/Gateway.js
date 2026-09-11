@@ -100,6 +100,11 @@ if (window.Common === undefined) {
                 $me.trigger('showsharingsettings', data);
             },
 
+            'setDocumentTitle': function(data) {
+                if (data && typeof data.title === 'string' && data.title && data.title.length <= 1024)
+                    $me.trigger('setdocumenttitle', data);
+            },
+
             'setSharingSettings': function(data) {
                 $me.trigger('setsharingsettings', data);
             },
@@ -118,6 +123,10 @@ if (window.Common === undefined) {
 
             'setAssistantAvailable': function(data) {
                 $me.trigger('setassistantavailable', data);
+            },
+
+            'setSidePanelState': function(data) {
+                $me.trigger('setsidepanelstate', data);
             },
 
             'setMailMergeRecipients': function(data) {
@@ -381,6 +390,10 @@ if (window.Common === undefined) {
 
             requestSharingSettings:  function () {
                 _postMessage({event:'onRequestSharingSettings'});
+            },
+
+            requestSidePanel:  function (data) {
+                _postMessage({event:'onRequestSidePanel', data: data});
             },
 
             requestCreateNew:  function () {

@@ -36,7 +36,8 @@ Common.Views = Common.Views || {};
 
 define([
     'backbone',
-    'core'
+    'core',
+    'common/main/lib/component/ExternalPanels'
 ], function (Backbone) { 'use strict';
 
     Common.Views.Header =  Backbone.View.extend(_.extend(function(){
@@ -90,6 +91,7 @@ define([
                                     '<div class="btn-slot" id="slot-hbtn-print-quick"></div>' +
                                     '<div class="btn-slot" id="slot-hbtn-download"></div>' +
                                 '</div>' +
+                                '<div class="hedset" id="slot-btn-side-panels"></div>' +
                                 '<div class="hedset" data-layout-name="header-editMode">' +
                                     '<div class="btn-slot" id="slot-btn-edit-mode"></div>' +
                                 '</div>' +
@@ -384,6 +386,14 @@ define([
                 // me.btnFavorite.updateHint(!me.options.favorite ? me.textAddFavorite : me.textRemoveFavorite);
                 Common.NotificationCenter.trigger('markfavorite', !me.options.favorite);
             });
+
+            // Attached here rather than at construction: the registry reports
+            // whether each control is actually reachable, which is only true
+            // once the header is in the document.
+            (me.sidePanelButtons || []).forEach(function (entry) {
+                Common.UI.ExternalPanels.attach(entry.panel, entry.button);
+            });
+            me.sidePanelButtons && me.sidePanelButtons.length && updateDocNamePosition();
 
             if (me.btnShare) {
                 me.btnShare.on('click', function (e) {
@@ -983,6 +993,33 @@ define([
                         me.btnShare.render($html.find('#slot-btn-share'));
                     } else {
                         $html.find('#slot-btn-share').hide();
+                    }
+
+                    // Host-owned panels with placement 'header': a captioned
+                    // button beside Share. The editor ships the control; the
+                    // panel it opens belongs to the integrating application.
+                    if (config && config.canRequestSidePanel) {
+                        var $sidePanelSlot = $html.findById('#slot-btn-side-panels'),
+                            masked = Common.UI.ExternalPanels.supportsMask();
+                        me.sidePanelButtons = Common.UI.ExternalPanels
+                            .read(config.customization && config.customization.sidePanels, 'header')
+                            .map(function (panel) {
+                                var $slot = $('<div class="btn-slot"></div>').appendTo($sidePanelSlot),
+                                    button = new Common.UI.Button({
+                                        cls: 'btn-header btn-header-side-panel',
+                                        iconCls: panel.icon && masked ? 'toolbar__icon icon--inverse side-panel-icon' : '',
+                                        iconImg: panel.icon && !masked ? panel.icon : undefined,
+                                        caption: Common.Utils.String.htmlEncode(panel.title),
+                                        enableToggle: true,
+                                        dataHint: '0',
+                                        dataHintDirection: 'bottom',
+                                        dataHintOffset: 'big'
+                                    });
+                                button.render($slot);
+                                panel.icon && masked &&
+                                    Common.UI.ExternalPanels.applyMask(button, '.side-panel-icon', panel.icon);
+                                return {panel: panel, button: button};
+                            });
                     }
 
                     if (isPDFEditor && config.isEdit && config.canSwitchMode) { // hide in pdf editor

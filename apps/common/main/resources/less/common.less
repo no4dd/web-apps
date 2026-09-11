@@ -137,6 +137,46 @@ label {
     }
 }
 
+// customization.sidePanels toggles. The host supplies one icon URL; it is
+// painted as a mask so the editor's own theme colours it in every state,
+// exactly as the sprite icons beside it are coloured.
+.btn-category.side-panel-button {
+    .side-panel-icon {
+        display: inline-block;
+        width: @x-small-btn-icon-size-ie;
+        width: @x-small-btn-icon-size;
+        height: @x-small-btn-icon-size-ie;
+        height: @x-small-btn-icon-size;
+        vertical-align: middle;
+        font-size: 0;
+        background-color: @icon-normal-ie;
+        background-color: @icon-normal;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+    }
+
+    &:active:not(.disabled),
+    &.active:not(.disabled) {
+        .side-panel-icon {
+            background-color: @icon-normal-pressed-ie;
+            background-color: @icon-normal-pressed;
+        }
+    }
+
+    // Fallback when masking is unavailable: the icon draws as-supplied.
+    img {
+        max-width: @x-small-btn-icon-size-ie;
+        max-width: @x-small-btn-icon-size;
+        max-height: @x-small-btn-icon-size-ie;
+        max-height: @x-small-btn-icon-size;
+        vertical-align: middle;
+    }
+}
+
 .left-panel {
     height: 100%;
     padding: @layout-padding-left-panel-ie;

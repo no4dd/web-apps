@@ -11,8 +11,8 @@ const types = { Button: 1, Timeout: 2, Command: 0, Form: 3, Internal: 4 };
 const errors = { ForceSaveButton: -331, ForceSaveTimeout: -332, ConvertationSaveError: -83 };
 const actions = { Save: 1, ForceSaveButton: 2, Disconnect: 3, ApplyChanges: 4, Open: 5 };
 const labels = {
-    unconfirmed: 'Storage save not yet confirmed', pending: 'Saving document to storage…',
-    failed: 'Storage save failed. Keep this document open.', confirmed: 'Last document snapshot saved'
+    unconfirmed: 'Unsaved changes', pending: 'Saving…',
+    failed: 'Couldn’t save your changes. Keep this document open.', confirmed: 'All changes saved'
 };
 function context() {
     const ctx = {
@@ -51,6 +51,8 @@ function fixture() {
 }
 test('action end, NotModified, missing and malformed results never confirm storage', () => {
     const f = fixture();
+    f.client.modified = true;
+    f.client.emit('asc_onDocumentModifiedChanged');
     f.client.emit('asc_onEndAction', 1, actions.Save);
     for (const value of [undefined, {}, { time: 1, success: 'true' }, { time: NaN, success: true },
         { time: Infinity, success: true }, { time: -1, success: true }, { time: '1', success: true },
@@ -255,7 +257,7 @@ test('opening another document resets receipt state and cannot inherit an old su
     f.result(100, { success: true });
     f.client.emit('asc_onStartAction', 2, actions.Open);
     f.result(100, { success: true });
-    assert.equal(f.model.caption(''), labels.unconfirmed);
+    assert.equal(f.model.caption(''), '', 'a reopened document is clean, not unconfirmed');
     f.result(101, { start: true });
     f.result(101, { success: true });
     assert.equal(f.model.caption(''), labels.confirmed);
@@ -269,7 +271,46 @@ test('document state is isolated; both collaborators can consume room timeout ac
         f.result(100, { success: true });
         assert.equal(f.model.caption(''), labels.confirmed);
     }
-    assert.equal(otherDocument.model.caption(''), labels.unconfirmed);
+    assert.equal(otherDocument.model.caption(''), '');
+});
+test('an existing document opens clean and only a local edit makes it unconfirmed', () => {
+    const f = fixture();
+    assert.equal(f.model.state, 'clean');
+    assert.equal(f.model.caption(''), '');
+    assert.equal(f.model.caption('other'), 'other');
+    for (const event of ['asc_onCollaborativeChanges', 'asc_onCoAuthoringDisconnect']) {
+        f.client.emit(event);
+        assert.equal(f.model.state, 'clean', event + ' cannot dirty a document this editor never touched');
+    }
+    f.client.emit('asc_onStartAction', 1, actions.Save);
+    assert.equal(f.model.state, 'clean');
+    f.client.emit('asc_onDocumentModifiedChanged'); // modified flag still false
+    assert.equal(f.model.state, 'clean');
+    f.client.modified = true;
+    f.client.emit('asc_onDocumentModifiedChanged');
+    assert.equal(f.model.caption(''), labels.unconfirmed);
+    f.result(100, { start: true });
+    assert.equal(f.model.caption(''), labels.pending);
+    f.result(100, { success: true });
+    assert.equal(f.model.caption(''), labels.confirmed);
+    f.client.emit('asc_onCollaborativeChanges');
+    assert.equal(f.model.caption(''), labels.unconfirmed, 'remote changes withdraw a claimed receipt');
+    f.client.emit('asc_onStartAction', 1, actions.Open);
+    assert.equal(f.model.caption(''), '', 'reopening returns to clean');
+});
+test('a collaborator’s storage save confirms a clean editor and its failure still surfaces', () => {
+    const f = fixture();
+    f.result(100, { start: true });
+    assert.equal(f.model.caption(''), labels.pending);
+    f.result(100, { success: true });
+    assert.equal(f.model.caption(''), labels.confirmed);
+    const g = fixture();
+    f.client.emit('asc_onCollaborativeChanges');
+    g.result(101, { start: true });
+    g.result(101, { success: false });
+    assert.equal(g.model.caption(''), labels.failed);
+    g.client.emit('asc_onStartAction', 1, actions.Open);
+    assert.equal(g.model.caption(''), '', 'a reopen clears an old failure');
 });
 for (const [editor, ns] of [['documenteditor', 'DE'], ['spreadsheeteditor', 'SSE'],
     ['presentationeditor', 'PE'], ['pdfeditor', 'PDFE']]) {
@@ -282,6 +323,9 @@ for (const [editor, ns] of [['documenteditor', 'DE'], ['spreadsheeteditor', 'SSE
         controller.statusbar = { showStatusMessage: text => { visible = text; },
             clearStatusMessage: () => { visible = ''; } };
         controller.setStorageSaveApi(client, { isEdit: true, isOffline: false });
+        assert.equal(visible, '', 'opening an existing document renders no save status');
+        client.modified = true;
+        client.emit('asc_onDocumentModifiedChanged');
         assert.equal(visible, labels.unconfirmed);
         client.emit('asc_onStorageSave', { type: types.Timeout, time: 100, start: true });
         client.emit('asc_onStorageSave', { type: types.Timeout, time: 100, success: false });

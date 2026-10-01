@@ -5293,8 +5293,8 @@
   "SSE.Views.WBProtection.txtSheetUnlockTitle": "Unprotect sheet",
   "SSE.Views.WBProtection.txtWBUnlockDescription": "Enter a password to unprotect workbook",
   "SSE.Views.WBProtection.txtWBUnlockTitle": "Unprotect workbook",
-  "SSE.Controllers.Statusbar.textStorageUnconfirmed": "Storage save not yet confirmed",
-  "SSE.Controllers.Statusbar.textStoragePending": "Saving document to storage…",
-  "SSE.Controllers.Statusbar.textStorageFailed": "Storage save failed. Keep this document open.",
-  "SSE.Controllers.Statusbar.textStorageConfirmed": "Last document snapshot saved"
+  "SSE.Controllers.Statusbar.textStorageUnconfirmed": "Unsaved changes",
+  "SSE.Controllers.Statusbar.textStoragePending": "Saving…",
+  "SSE.Controllers.Statusbar.textStorageFailed": "Couldn’t save your changes. Keep this document open.",
+  "SSE.Controllers.Statusbar.textStorageConfirmed": "All changes saved"
 }

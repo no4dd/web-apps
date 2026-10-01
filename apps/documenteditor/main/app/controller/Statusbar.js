@@ -283,10 +283,10 @@ define([
             this.storageSaveStatus = new Common.Utils.StorageSaveStatus(api, function () {
                 me.setStatusCaption('', true);
             }, {
-                unconfirmed: this.textStorageUnconfirmed || 'Storage save not yet confirmed',
-                pending: this.textStoragePending || 'Saving document to storage…',
-                failed: this.textStorageFailed || 'Storage save failed. Keep this document open.',
-                confirmed: this.textStorageConfirmed || 'Last document snapshot saved'
+                unconfirmed: this.textStorageUnconfirmed || 'Unsaved changes',
+                pending: this.textStoragePending || 'Saving…',
+                failed: this.textStorageFailed || 'Couldn’t save your changes. Keep this document open.',
+                confirmed: this.textStorageConfirmed || 'All changes saved'
             });
             this.setStatusCaption('', true);
         },

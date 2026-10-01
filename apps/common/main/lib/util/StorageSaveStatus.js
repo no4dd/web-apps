@@ -5,8 +5,19 @@
 define([], function () {
     'use strict';
 
+    // States:
+    //   clean       — nothing has changed in this editor since the document was
+    //                 opened, so the copy in storage is the copy on screen.
+    //                 Renders no caption; a freshly opened document is not a
+    //                 warning.
+    //   unconfirmed — the document has changed (here or by a collaborator) and
+    //                 no storage receipt covers those changes yet.
+    //   pending     — a storage save that covers the current work has started.
+    //   confirmed   — storage acknowledged a save of the current work.
+    //   failed      — storage refused or timed out; stays until a matching
+    //                 receipt recovers it.
     function StorageSaveStatus(api, changed, labels) {
-        this.state = 'unconfirmed';
+        this.state = 'clean';
         this.time = -1;
         this.type = null;
         this.api = api;
@@ -18,17 +29,13 @@ define([], function () {
         var me = this;
         api.asc_registerCallback('asc_onStorageSave', function (data) { me.onResult(data); });
         api.asc_registerCallback('asc_onDocumentModifiedChanged', function () {
-            if (api.isDocumentModified()) me.invalidate();
+            if (api.isDocumentModified()) me.invalidate(true);
         });
         api.asc_registerCallback('asc_onCoAuthoringDisconnect', function () { me.invalidate(); });
         api.asc_registerCallback('asc_onCollaborativeChanges', function () { me.invalidate(); });
         api.asc_registerCallback('asc_onStartAction', function (type, id) {
             if (id === Asc.c_oAscAsyncAction.Open || id === Asc.c_oAscAsyncAction.RefreshFile) {
-                me.state = 'unconfirmed';
-                me.time = -1;
-                me.type = null;
-                me.attemptGeneration = -1;
-                me.invalidate();
+                me.reset();
             } else if (id === Asc.c_oAscAsyncAction.Disconnect || id === Asc.c_oAscAsyncAction.Save) {
                 me.invalidate();
             }
@@ -47,9 +54,23 @@ define([], function () {
         });
     }
 
-    StorageSaveStatus.prototype.invalidate = function () {
+    // A freshly opened document owes storage nothing until this editor changes it.
+    StorageSaveStatus.prototype.reset = function () {
         ++this.generation;
-        if (this.state !== 'failed') this.state = 'unconfirmed';
+        this.state = 'clean';
+        this.time = -1;
+        this.type = null;
+        this.attemptGeneration = -1;
+        this.changed();
+    };
+
+    // Any in-flight receipt no longer covers the current work. A local edit
+    // always dirties the document; a remote change or a disconnect only
+    // withdraws a receipt that was already claimed (confirmed/pending) — a clean
+    // editor that has typed nothing has nothing of its own at risk.
+    StorageSaveStatus.prototype.invalidate = function (localEdit) {
+        ++this.generation;
+        if (this.state !== 'failed' && (localEdit || this.state !== 'clean')) this.state = 'unconfirmed';
         this.changed();
     };
 
@@ -116,7 +137,7 @@ define([], function () {
 
     StorageSaveStatus.prototype.caption = function (other) {
         if (this.state === 'failed') return this.labels.failed;
-        return other || this.labels[this.state];
+        return other || this.labels[this.state] || '';
     };
 
     Common.Utils.StorageSaveStatus = StorageSaveStatus;

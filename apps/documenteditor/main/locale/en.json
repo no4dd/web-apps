@@ -4374,8 +4374,8 @@
   "DE.Views.WatermarkSettingsDialog.textUnderline": "Underline",
   "DE.Views.WatermarkSettingsDialog.tipFontName": "Font name",
   "DE.Views.WatermarkSettingsDialog.tipFontSize": "Font size",
-  "DE.Controllers.Statusbar.textStorageUnconfirmed": "Storage save not yet confirmed",
-  "DE.Controllers.Statusbar.textStoragePending": "Saving document to storage…",
-  "DE.Controllers.Statusbar.textStorageFailed": "Storage save failed. Keep this document open.",
-  "DE.Controllers.Statusbar.textStorageConfirmed": "Last document snapshot saved"
+  "DE.Controllers.Statusbar.textStorageUnconfirmed": "Unsaved changes",
+  "DE.Controllers.Statusbar.textStoragePending": "Saving…",
+  "DE.Controllers.Statusbar.textStorageFailed": "Couldn’t save your changes. Keep this document open.",
+  "DE.Controllers.Statusbar.textStorageConfirmed": "All changes saved"
 }

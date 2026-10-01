@@ -3079,8 +3079,8 @@
   "PDFE.Views.ViewTab.tipHeadings": "Headings",
   "PDFE.Views.ViewTab.tipInterfaceTheme": "Interface theme",
   "PDFE.Views.ViewTab.tipRecognize": "Edit text",
-  "PDFE.Controllers.Statusbar.textStorageUnconfirmed": "Storage save not yet confirmed",
-  "PDFE.Controllers.Statusbar.textStoragePending": "Saving document to storage…",
-  "PDFE.Controllers.Statusbar.textStorageFailed": "Storage save failed. Keep this document open.",
-  "PDFE.Controllers.Statusbar.textStorageConfirmed": "Last document snapshot saved"
+  "PDFE.Controllers.Statusbar.textStorageUnconfirmed": "Unsaved changes",
+  "PDFE.Controllers.Statusbar.textStoragePending": "Saving…",
+  "PDFE.Controllers.Statusbar.textStorageFailed": "Couldn’t save your changes. Keep this document open.",
+  "PDFE.Controllers.Statusbar.textStorageConfirmed": "All changes saved"
 }
